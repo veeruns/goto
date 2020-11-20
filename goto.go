@@ -27,10 +27,16 @@ func main() {
 	addEntry(db, "go", "https://www.google.com")
 	r.HandleFunc("/{category}", HomeHandler).Methods("GET")
 	r.HandleFunc("/addentry", AddEntryHandler).Methods("POST")
+
+	r.PathPrefix("/css/").Handler(http.StripPrefix("/css/", http.FileServer(http.Dir("./css/"))))
 	r.HandleFunc("/", firstpage)
 	http.Handle("/", r)
 	listenaddress := fmt.Sprintf("localhost:%d", port)
 	http.ListenAndServe(listenaddress, r)
+}
+
+func CSSHandler(w http.ResponseWriter, r *http.Request) {
+
 }
 func AddEntryHandler(w http.ResponseWriter, r *http.Request) {
 	shortcut := r.FormValue("shortcut")
