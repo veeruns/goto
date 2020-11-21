@@ -29,7 +29,7 @@ func main() {
 	r := mux.NewRouter()
 	db, _ = setupDB()
 
-	r.HandleFunc("/magicdata", TemplateHandler)
+	r.HandleFunc("/goto", TemplateHandler)
 
 	r.HandleFunc("/{category}", HomeHandler).Methods("GET")
 	r.HandleFunc("/addentry", AddEntryHandler).Methods("POST")
@@ -78,6 +78,8 @@ func AddEntryHandler(w http.ResponseWriter, r *http.Request) {
 	url := r.FormValue("url")
 	if len(shortcut) > 0 && len(url) > 0 {
 		addEntry(db, shortcut, url)
+		w.Header().Set("location", "/goto")
+		http.Redirect(w, r, "/goto", 301)
 	} else {
 		fmt.Fprintf(w, "Cannot give empty value")
 		w.WriteHeader(http.StatusBadRequest)
