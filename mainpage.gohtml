@@ -1,0 +1,37 @@
+<html>
+<head>
+  <link rel="stylesheet" href="css/table.css">
+  <link rel="stylesheet" href="css/rightalign.css">
+  <script src="css/table.js"></script>
+</head>
+<body>
+<div id="ovoMenu">
+    <div class="right">
+        <a href="css/Add.html">Add Shortcut</a>
+    </div>
+</div>
+<section>
+  <h1>Goto Links</h1>
+  <div class="tbl-header">
+    <table cellpadding="0" cellspacing="0" border="0">
+      <thead>
+        <tr>
+          <th>Shortcut</th>
+          <th>URL</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+  <div class="tbl-content">
+    <table cellpadding="0" cellspacing="0" border="0">
+      <tbody>
+      {{range .}}<tr>
+        {{range rangeStruct .}}	<td>{{.}}</td>
+      {{end}}</tr>
+{{end}}
+      </tbody>
+    </table>
+  </div>
+</section>
+</body>
+</html>

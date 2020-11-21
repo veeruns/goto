@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"html/template"
+	"reflect"
+
 	"github.com/boltdb/bolt"
 	"github.com/gorilla/mux"
 	flag "github.com/spf13/pflag"
@@ -15,6 +18,8 @@ type Shortcut struct {
 	URL string
 }
 
+var templateFuncs = template.FuncMap{"rangeStruct": RangeStructer}
+var shortcuts []Shortcut
 var db *bolt.DB
 
 func main() {
@@ -23,8 +28,9 @@ func main() {
 	flag.Parse()
 	r := mux.NewRouter()
 	db, _ = setupDB()
-	addEntry(db, "ya", "https://www.yahoo.com")
-	addEntry(db, "go", "https://www.google.com")
+
+	r.HandleFunc("/magicdata", TemplateHandler)
+
 	r.HandleFunc("/{category}", HomeHandler).Methods("GET")
 	r.HandleFunc("/addentry", AddEntryHandler).Methods("POST")
 
@@ -35,8 +41,37 @@ func main() {
 	http.ListenAndServe(listenaddress, r)
 }
 
-func CSSHandler(w http.ResponseWriter, r *http.Request) {
+//TemplateHandler is the function that handles the table css template
+func TemplateHandler(w http.ResponseWriter, r *http.Request) {
+	/*var htmlTemplate = `{{range .}}<tr>
+	{{range rangeStruct .}}	<td>{{.}}</td>
+	{{end}}</tr>
+	{{end}}`*/
+	var shcuts []Shortcut
+	err := db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("SHORTCUT"))
+		b.ForEach(func(k, v []byte) error {
+			var s Shortcut
+			s.ID = string(k)
+			s.URL = string(v)
+			fmt.Printf("Key: %s, Value: %s\n", string(k), string(v))
+			shcuts = append(shcuts, s)
+			return nil
+		})
+		return nil
+	})
+	if err != nil {
+		fmt.Printf("Unable to read the db %v\n", err.Error())
+	}
+	tf, err := template.New("mainpage.gohtml").Funcs(templateFuncs).ParseFiles("mainpage.gohtml")
+	if err != nil {
+		fmt.Printf("Error is %v\n", err.Error())
 
+	}
+	err = tf.Execute(w, shcuts)
+	if err != nil {
+		panic(err)
+	}
 }
 func AddEntryHandler(w http.ResponseWriter, r *http.Request) {
 	shortcut := r.FormValue("shortcut")
@@ -116,4 +151,26 @@ func getEntry(db *bolt.DB, id string) (string, error) {
 	}
 
 	return string(url), nil
+}
+
+// RangeStructer takes the first argument, which must be a struct, and
+// returns the value of each field in a slice. It will return nil
+// if there are no arguments or first argument is not a struct
+func RangeStructer(args ...interface{}) []interface{} {
+	if len(args) == 0 {
+		return nil
+	}
+
+	v := reflect.ValueOf(args[0])
+	if v.Kind() != reflect.Struct {
+		return nil
+	}
+
+	out := make([]interface{}, v.NumField())
+	for i := 0; i < v.NumField(); i++ {
+		out[i] = v.Field(i).Interface()
+
+	}
+
+	return out
 }
