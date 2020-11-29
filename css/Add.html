@@ -26,10 +26,10 @@
       font-size: 110px;
       display: flex;
       justify-content: center;
-      color: #4286f4;
+      color: #0e7248;
       }
       button {
-      background-color: #4286f4;
+      background-color: #0e7248;
       color: white;
       padding: 14px 0;
       margin: 10px 0;
@@ -68,12 +68,10 @@
   <body>
     <form action="/addentry" method="post">
       <h1>Add new shortcut</h1>
-      <div class="icon">
-        <i class="fas fa-user-circle"></i>
-      </div>
       <div class="formcontainer">
       <div class="container">
         <label for="shortcut"><strong>Shortcut</strong></label>
+        <input type="text" placeholder="" name="section" required>
         <input type="text" placeholder="Enter shortcut" name="shortcut" required>
         <label for="url"><strong>URL</strong></label>
         <input type="text" placeholder="Enter URL" name="url" required>
